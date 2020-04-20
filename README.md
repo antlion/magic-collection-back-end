@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # node-token-based-authentication
 
 Node Token-based Authentication REST APIs tutorial with examples - learn how to build a secure user authentication CRUD APIs using JSON web token.
@@ -23,3 +24,6 @@ Node Token-based Authentication REST APIs tutorial with examples - learn how to 
 - Open other terminal run `mongod`
 
 Open API URL on [http://localhost:4000/api](http://localhost:4000/api)
+=======
+# magic-collection-back-end-
+>>>>>>> d6d4ff6fabecc5cf48429d046cfde1cf05fd6b54
