@@ -1,5 +1,5 @@
 {
-  "name": "node-token-based-authentication",
+  "name":"magic-collection-back-end",
   "version": "1.0.0",
   "description": "A node token token-based user authentication REST API",
   "main": "server.js",
@@ -17,5 +17,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.7.3",
     "mongoose-unique-validator": "^2.0.3"
+  },
+  "engines": {
+    "node": "12.16.2"
   }
 }
