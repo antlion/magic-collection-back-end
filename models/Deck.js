@@ -14,7 +14,28 @@ let deckSchema = new Schema({
         type: String
     },
     creatures: {
-        type: [cardSchema.Schema]
+        type: [cardSchema.Schema],
+        default: []
+    },
+    artifacts: {
+        type: [cardSchema.Schema],
+        default: []
+    },
+    enchantments: {
+        type: [cardSchema.Schema],
+        default: []
+    },
+    planeswalkers: {
+        type: [cardSchema.Schema],
+        default: []
+    },
+    spells:{
+        type: [cardSchema.Schema],
+        default: []
+    },
+    lands: {
+        type: [cardSchema.Schema],
+        default: []
     }
 }, {
     collection: 'decks'

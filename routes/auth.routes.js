@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const router = express.Router();
 const userSchema = require("../models/User");
 const deckSchema = require("../models/Deck");
+const cardSchema = require("../models/Card");
 
 const authorize = require("../middlewares/auth");
 const { check, validationResult } = require('express-validator');
@@ -160,6 +161,37 @@ router.post("/my-decks/:id/add",(req, res, next) => {
             error: error
         });
     });
+})
+
+router.post("/my-decks/:id/patch",(req, res, next) => {
+
+    const filter = { _id: req.body.id };
+    const update = { creatures: [new cardSchema({name: 'pippo'})], artifacts:req.body.artifacts };
+    let doc = deckSchema.findByIdAndUpdate(req.body.id, update, function(err, result) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.send(result);
+        }
+    })
+
+
+
+
+
+})
+
+
+router.route('/my-decks/:id/:id_deck').get(authorize, (req, res, next) => {
+    deckSchema.findById(req.params.id_deck, (error, data) => {
+        if (error) {
+            return next(error);
+        } else {
+            res.status(200).json({
+                data
+            })
+        }
+    })
 })
 
 // Delete User
