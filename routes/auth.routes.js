@@ -172,7 +172,8 @@ router.post("/my-decks/:id/patch",(req, res, next) => {
         enchantments: req.body.enchantments,
         planeswalkers: req.body.planeswalkers,
         spells: req.body.spells,
-        lands: req.body.lands
+        lands: req.body.lands,
+        sideboard: req.body.sideboard
     };
     let doc = deckSchema.findByIdAndUpdate(req.body.id, update, function(err, result) {
         if (err) {

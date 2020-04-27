@@ -36,6 +36,10 @@ let deckSchema = new Schema({
     lands: {
         type: [cardSchema.Schema],
         default: []
+    },
+    sideboard: {
+        type: [cardSchema.Schema],
+        default: []
     }
 }, {
     collection: 'decks'

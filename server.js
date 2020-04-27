@@ -6,6 +6,7 @@ const dbConfig = require('./database/db');
 
 // Express APIs
 const api = require('./routes/auth.routes');
+const apiCollection = require('./routes/collection.routes');
 
 // MongoDB conection
 mongoose.Promise = global.Promise;
@@ -36,6 +37,7 @@ app.use(cors());
 app.use('/public', express.static('public'));
 
 app.use('/api', api)
+app.use('/api', apiCollection)
 
 // Define PORT
 const port = process.env.PORT || 4000;
