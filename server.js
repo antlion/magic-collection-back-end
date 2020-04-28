@@ -7,6 +7,7 @@ const dbConfig = require('./database/db');
 // Express APIs
 const api = require('./routes/auth.routes');
 const apiCollection = require('./routes/collection.routes');
+const apiDecks = require('./routes/decks.routes');
 
 // MongoDB conection
 mongoose.Promise = global.Promise;
@@ -38,7 +39,7 @@ app.use('/public', express.static('public'));
 
 app.use('/api', api)
 app.use('/api', apiCollection)
-
+app.use('/api', apiDecks)
 // Define PORT
 const port = process.env.PORT || 4000;
 const server = app.listen(port, () => {

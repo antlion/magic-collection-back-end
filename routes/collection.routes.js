@@ -16,7 +16,7 @@ router.route("/my-collection/:id/all").get(authorize,(req, res, next) => {
     })
 })
 
-// GET
+// GET SINGLE
 router.route('/my-collection/:id/:id_deck').get(authorize, (req, res, next) => {
     collectionSchema.findById(req.params.id_deck, (error, data) => {
         if (error) {
@@ -46,6 +46,21 @@ router.route("/my-collection/:id/add").post(authorize,(req, res, next) => {
             error: error
         });
     });
+})
+
+//PATCH
+router.route("/my-collection/:id/patch").post(authorize,(req, res, next) => {
+
+    const update = {
+        cardList: req.body.cardList
+    };
+    let doc = collectionSchema.findByIdAndUpdate(req.body.id, update, function(err, result) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.send(result);
+        }
+    })
 })
 
 module.exports = router;
