@@ -63,4 +63,65 @@ router.route("/my-collection/:id/patch").post(authorize,(req, res, next) => {
     })
 })
 
+// search card collection
+router.route("/my-collection/:id/search/:card_name").get(authorize,(req, res, next) => {
+
+    let doc = collectionSchema.find(
+        {
+            wishList: false,
+            "cardList.name": req.params.card_name },
+        {_id: 0, cardList: {$elemMatch: {name:req.params.card_name}}},
+        function(err, result) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.send(result);
+        }
+    })
+})
+
+// add card defualt collection
+router.route("/my-collection/:id/default").post(authorize,(req, res, next) => {
+
+    collectionSchema.findOne({name: 'My Collection'}).
+        then(function (doc) {
+        if (doc) {
+            collectionSchema.findOne({"cardList.name": req.body.name}).then(function (element) {
+                if(element && element._doc.cardList.length > 0){
+                    collectionSchema.findOneAndUpdate({'cardList.name': req.body.name} , {'$set': {'cardList.$.quantity': req.body.quantityCol}}).then(
+                        function (err, result) {
+                            if (err) {
+                                res.send(err);
+                            } else {
+                                res.send(result);
+                            }
+                        })
+                } else {
+                    doc.cardList.push(
+                        {
+                            "quantity": req.body.quantityCol,
+                            "name": req.body.name,
+                            "edition": req.body.edition,
+                            "avatar": req.body.avatar,
+                            "type": req.body.type,
+                            "manaCost": req.body.manaCost,
+                            "png": req.body.png
+                        }
+                    )
+                    doc.save(function (err, result) {
+                        if (err) {
+                            res.send(err);
+                        } else {
+                            res.send(true);
+                        }
+                    })
+                }
+            })
+
+        }
+    })
+
+})
+
+
 module.exports = router;
