@@ -4,16 +4,29 @@ const collectionSchema = require("../models/Collection");
 const authorize = require("../middlewares/auth");
 
 // GET ALL
-router.route("/my-collection/:id/all").get(authorize,(req, res, next) => {
-    collectionSchema.find({userId: req.params.id} , (error, data) => {
-        if (error) {
-            return next(error);
-        } else {
-            res.status(200).json({
-                data
-            })
-        }
-    })
+router.route("/my-collection/:id/all/:with_card").get(authorize,(req, res, next) => {
+    if (req.params.with_card == 'true') {
+        collectionSchema.find({userId: req.params.id}  , (error, data) => {
+            if (error) {
+                return next(error);
+            } else {
+                res.status(200).json({
+                    data
+                })
+            }
+        })
+    } else{
+        collectionSchema.find({userId: req.params.id}, { cardList:0 }  , (error, data) => {
+            if (error) {
+                return next(error);
+            } else {
+                res.status(200).json({
+                    data
+                })
+            }
+        })
+    }
+
 })
 
 // GET SINGLE
