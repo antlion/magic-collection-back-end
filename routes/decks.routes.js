@@ -39,5 +39,30 @@ router.post("/my-decks/:id/patch",(req, res, next) => {
     })
 })
 
+router.route('/my-decks/:id/:id_deck').get(authorize, (req, res, next) => {
+    deckSchema.findById(req.params.id_deck, (error, data) => {
+        if (error) {
+            return next(error);
+        } else {
+            res.status(200).json({
+                data
+            })
+        }
+    })
+})
+
+
+// Get Single User
+router.route('/my-decks/:id').get(authorize, (req, res, next) => {
+    deckSchema.find({userId: req.params.id} , (error, data) => {
+        if (error) {
+            return next(error);
+        } else {
+            res.status(200).json({
+                data
+            })
+        }
+    })
+})
 
 module.exports = router;
