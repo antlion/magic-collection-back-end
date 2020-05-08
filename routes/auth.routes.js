@@ -163,26 +163,6 @@ router.post("/my-decks/:id/add",(req, res, next) => {
     });
 })
 
-router.post("/my-decks/:id/patch",(req, res, next) => {
-
-    const filter = { _id: req.body.id };
-    const update = {
-        creatures: req.body.creatures,
-        artifacts: req.body.artifacts,
-        enchantments: req.body.enchantments,
-        planeswalkers: req.body.planeswalkers,
-        spells: req.body.spells,
-        lands: req.body.lands,
-        sideboard: req.body.sideboard
-    };
-    let doc = deckSchema.findByIdAndUpdate(req.body.id, update, function(err, result) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.send(result);
-        }
-    })
-})
 
 
 router.route('/my-decks/:id/:id_deck').get(authorize, (req, res, next) => {

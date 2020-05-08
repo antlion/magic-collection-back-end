@@ -77,11 +77,14 @@ router.route("/my-collection/:id/patch").post(authorize,(req, res, next) => {
 })
 
 // search card collection
-router.route("/my-collection/:id/search/:card_name").get(authorize,(req, res, next) => {
+router.route("/my-collection/:id/search/:card_name/:wishlist").get(authorize,(req, res, next) => {
 
+    if (req.params.card_name.indexOf("$") > -1 ){
+        req.params.card_name = req.params.card_name.replace("$", '//');
+    }
     let doc = collectionSchema.find(
         {
-            wishList: false,
+            wishList: req.params.wishlist === 'true',
             "cardList.name": req.params.card_name },
         {_id: 0, cardList: {$elemMatch: {name:req.params.card_name}}},
         function(err, result) {

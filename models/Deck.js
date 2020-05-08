@@ -40,6 +40,10 @@ let deckSchema = new Schema({
     sideboard: {
         type: [cardSchema.Schema],
         default: []
+    },
+    mayboard: {
+        type: [cardSchema.Schema],
+        default: []
     }
 }, {
     collection: 'decks'
