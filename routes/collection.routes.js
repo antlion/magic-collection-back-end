@@ -3,6 +3,20 @@ const router = express.Router();
 const collectionSchema = require("../models/Collection");
 const authorize = require("../middlewares/auth");
 
+
+// delete
+router.route("/my-collection/:id/delete/:id_collection").delete(authorize,(req, res, next) => {
+    collectionSchema.findByIdAndRemove(req.params.id_collection , (error, data) => {
+        if (error) {
+            return next(error);
+        } else {
+            res.status(200).json({
+                data
+            })
+        }
+    })
+});
+
 // GET ALL
 router.route("/my-collection/:id/all/:with_card").get(authorize,(req, res, next) => {
     if (req.params.with_card == 'true') {
@@ -76,6 +90,24 @@ router.route("/my-collection/:id/patch").post(authorize,(req, res, next) => {
     })
 })
 
+
+router.route("/my-collection/:id/searchCards/:id_collection/:query").get(authorize,(req, res, next) => {
+
+    let doc = collectionSchema.find(
+        {
+            _id: req.params.id_collection,
+            "cardList.name": new RegExp(".*"+req.params.query+".*", "i")
+        },
+        {_id: 0, cardList: {$elemMatch: {name: new RegExp(".*"+req.params.query+".*", "i")}}},
+        function (err, result) {
+            if (err) {
+                res.send(err);
+            } else {
+                res.send(result);
+            }
+        })
+});
+
 // search card collection
 router.route("/my-collection/:id/search/:card_name/:wishlist").get(authorize,(req, res, next) => {
 
@@ -97,21 +129,39 @@ router.route("/my-collection/:id/search/:card_name/:wishlist").get(authorize,(re
 })
 
 // add card defualt collection
-router.route("/my-collection/:id/default").post(authorize,(req, res, next) => {
-
-    collectionSchema.findOne({name: 'My Collection'}).
+router.route("/my-collection/:id/default/:wishList").post(authorize,(req, res, next) => {
+    collectionSchema.findOne({name:  req.params.wishList == 'false' ? 'My Collection' : 'Wishlist'}).
         then(function (doc) {
         if (doc) {
-            collectionSchema.findOne({"cardList.name": req.body.name}).then(function (element) {
-                if(element && element._doc.cardList.length > 0){
-                    collectionSchema.findOneAndUpdate({'cardList.name': req.body.name} , {'$set': {'cardList.$.quantity': req.body.quantityCol}}).then(
-                        function (err, result) {
+            collectionSchema.findOne({
+                name:  req.params.wishList == 'false' ? 'My Collection' : 'Wishlist',
+                "cardList.name": req.body.name
+            }).then(function (element) {
+                if(element != null && element._doc.cardList.length > 0){
+                    if (req.body.quantityCol > 0){
+                        collectionSchema.findOneAndUpdate({'cardList.name': req.body.name} , {'$set': {'cardList.$.quantity': req.body.quantityCol}}).then(
+                            function (err, result) {
+                                if (err) {
+                                    res.send(err);
+                                } else {
+                                    res.send(result);
+                                }
+                            })
+                    } else {
+                        for (let i = 0; i < element._doc.cardList.length; i++) {
+                            if (element._doc.cardList[i].name === req.body.name) {
+                                element._doc.cardList.splice(i--, 1);
+                            }
+                        }
+                        element._doc.save( function (err, result) {
                             if (err) {
                                 res.send(err);
                             } else {
                                 res.send(result);
                             }
                         })
+                    }
+
                 } else {
                     doc.cardList.push(
                         {
@@ -134,6 +184,47 @@ router.route("/my-collection/:id/default").post(authorize,(req, res, next) => {
                 }
             })
 
+        } // non esiste
+        else {
+            const cardList = [];
+            cardList.push({
+                "quantity": req.body.quantityCol,
+                "name": req.body.name,
+                "edition": req.body.edition,
+                "avatar": req.body.avatar,
+                "type": req.body.type,
+                "manaCost": req.body.manaCost,
+                "png": req.body.png
+            })
+            const deck = new collectionSchema({
+                name: req.params.wishList == 'false' ? 'My Collection' : 'Wishlist',
+                wishList: req.params.wishList == 'false' ? false : true,
+                userId: req.params.id,
+            });
+            deck.save().then((response) => {
+                response.cardList.push(
+                    {
+                        "quantity": req.body.quantityCol,
+                        "name": req.body.name,
+                        "edition": req.body.edition,
+                        "avatar": req.body.avatar,
+                        "type": req.body.type,
+                        "manaCost": req.body.manaCost,
+                        "png": req.body.png
+                    }
+                )
+                response.save(function (err, result) {
+                    if (err) {
+                        res.send(err);
+                    } else {
+                        res.send(true);
+                    }
+                })
+            }).catch(error => {
+                res.status(500).json({
+                    error: error
+                });
+            });
         }
     })
 

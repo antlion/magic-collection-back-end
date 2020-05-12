@@ -47,11 +47,11 @@ const server = app.listen(port, () => {
 })
 
 // Express error handling
-app.use((req, res, next) => {
-    setImmediate(() => {
-        next(new Error('Something went wrong'));
-    });
+app.use(function(err, req, res, next) {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
 });
+
 
 app.use(function (err, req, res, next) {
     console.error(err.message);

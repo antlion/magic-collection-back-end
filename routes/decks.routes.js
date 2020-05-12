@@ -65,4 +65,22 @@ router.route('/my-decks/:id').get(authorize, (req, res, next) => {
     })
 })
 
+router.post("/my-decks/:id/add",(req, res, next) => {
+    const deck = new deckSchema({
+        name: req.body.name,
+        type: req.body.type,
+        userId: req.params.id
+    });
+    deck.save().then((response) => {
+        res.status(201).json({
+            message: "Deck Added!",
+            result: response
+        });
+    }).catch(error => {
+        res.status(500).json({
+            error: error
+        });
+    });
+})
+
 module.exports = router;
