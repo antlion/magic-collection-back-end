@@ -15,6 +15,9 @@ let cardSchema = new Schema({
     },
     quantity: {
         type: Number
+    },
+    rarity: {
+        type: String
     }
 }, {
     collection: 'cards'
