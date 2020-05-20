@@ -1,12 +1,76 @@
 const express = require("express");
 const router = express.Router();
 const collectionSchema = require("../models/Collection");
+const cardSchema = require("../models/Card");
+
 const authorize = require("../middlewares/auth");
 
+//push card in collection
+router.route("/my-collection/:id/:id_collection/push").post(authorize, (req, res, next) => {
+    let card = req.body
+    collectionSchema.findById(req.params.id_collection).then(function (doc) {
+        if (doc) {
+            const card = new cardSchema({
+                name: req.body.name,
+                edition: req.body.edition,
+                avatar: req.body.avatar,
+                quantity: req.body.quantity,
+                rarity: req.body.rarity
+            });
+            doc.cardList.push(req.body)
+            doc.save().then((response) => {
+                res.status(201).json({
+                    message: "Deck Added!",
+                    result: response
+                });
+            })
+        }
+    });
+});
+
+//patch card in collection
+router.route("/my-collection/:id/:id_collection/patchCard").post(authorize, (req, res, next) => {
+
+    collectionSchema.update(
+        {
+            _id: req.params.id_collection,
+            "cardList.name": req.body.name
+        },
+        {"$set": {"cardList.$.quantity": req.body.quantity}},
+        function (err, company) {
+            if (err) {
+                res.send(err);
+            } else {
+                res.send(company)
+            }
+        })
+
+
+});
+
+//delete card in collection
+router.route("/my-collection/:id/:id_collection/deleteCard").post(authorize, (req, res, next) => {
+
+    collectionSchema.updateOne(
+        {
+            _id: req.params.id_collection,
+        },
+        { $pull: {            "cardList": {name: req.body.name}
+            } },
+        function (err, company) {
+            if (err) {
+                res.send(err);
+            } else {
+                res.send(company)
+            }
+        })
+
+
+});
 
 // delete
-router.route("/my-collection/:id/delete/:id_collection").delete(authorize,(req, res, next) => {
-    collectionSchema.findByIdAndRemove(req.params.id_collection , (error, data) => {
+router.route("/my-collection/:id/delete/:id_collection").delete(authorize, (req, res, next) => {
+    collectionSchema.findByIdAndRemove(req.params.id_collection, (error, data) => {
         if (error) {
             return next(error);
         } else {
@@ -18,9 +82,9 @@ router.route("/my-collection/:id/delete/:id_collection").delete(authorize,(req, 
 });
 
 // GET ALL
-router.route("/my-collection/:id/all/:with_card").get(authorize,(req, res, next) => {
+router.route("/my-collection/:id/all/:with_card").get(authorize, (req, res, next) => {
     if (req.params.with_card == 'true') {
-        collectionSchema.find({userId: req.params.id}  , (error, data) => {
+        collectionSchema.find({userId: req.params.id}, (error, data) => {
             if (error) {
                 return next(error);
             } else {
@@ -29,8 +93,8 @@ router.route("/my-collection/:id/all/:with_card").get(authorize,(req, res, next)
                 })
             }
         })
-    } else{
-        collectionSchema.find({userId: req.params.id}, { cardList:0 }  , (error, data) => {
+    } else {
+        collectionSchema.find({userId: req.params.id}, {cardList: 0}, (error, data) => {
             if (error) {
                 return next(error);
             } else {
@@ -57,7 +121,7 @@ router.route('/my-collection/:id/:id_deck').get(authorize, (req, res, next) => {
 })
 
 // ADD
-router.route("/my-collection/:id/add").post(authorize,(req, res, next) => {
+router.route("/my-collection/:id/add").post(authorize, (req, res, next) => {
     const deck = new collectionSchema({
         name: req.body.name,
         wishList: req.body.wishList,
@@ -76,12 +140,12 @@ router.route("/my-collection/:id/add").post(authorize,(req, res, next) => {
 })
 
 //PATCH
-router.route("/my-collection/:id/patch").post(authorize,(req, res, next) => {
+router.route("/my-collection/:id/patch").post(authorize, (req, res, next) => {
 
     const update = {
         cardList: req.body.cardList
     };
-    let doc = collectionSchema.findByIdAndUpdate(req.body.id, update, function(err, result) {
+    let doc = collectionSchema.findByIdAndUpdate(req.body.id, update, function (err, result) {
         if (err) {
             res.send(err);
         } else {
@@ -91,14 +155,14 @@ router.route("/my-collection/:id/patch").post(authorize,(req, res, next) => {
 })
 
 
-router.route("/my-collection/:id/searchCards/:id_collection/:query").get(authorize,(req, res, next) => {
+router.route("/my-collection/:id/searchCards/:id_collection/:query").get(authorize, (req, res, next) => {
 
     let doc = collectionSchema.find(
         {
             _id: req.params.id_collection,
-            "cardList.name": new RegExp(".*"+req.params.query+".*", "i")
+            "cardList.name": new RegExp(".*" + req.params.query + ".*", "i")
         },
-        {_id: 0, cardList: {$elemMatch: {name: new RegExp(".*"+req.params.query+".*", "i")}}},
+        {_id: 0, cardList: {$elemMatch: {name: new RegExp(".*" + req.params.query + ".*", "i")}}},
         function (err, result) {
             if (err) {
                 res.send(err);
@@ -109,37 +173,38 @@ router.route("/my-collection/:id/searchCards/:id_collection/:query").get(authori
 });
 
 // search card collection
-router.route("/my-collection/:id/search/:card_name/:wishlist").get(authorize,(req, res, next) => {
+router.route("/my-collection/:id/search/:card_name/:wishlist").get(authorize, (req, res, next) => {
 
-    if (req.params.card_name.indexOf("$") > -1 ){
+    if (req.params.card_name.indexOf("$") > -1) {
         req.params.card_name = req.params.card_name.replace("$", '//');
     }
     let doc = collectionSchema.find(
         {
+            userId: req.params.id,
             wishList: req.params.wishlist === 'true',
-            "cardList.name": req.params.card_name },
-        {_id: 0, cardList: {$elemMatch: {name:req.params.card_name}}},
-        function(err, result) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.send(result);
-        }
-    })
+            "cardList.name": req.params.card_name
+        },
+        {_id: 0, cardList: {$elemMatch: {name: req.params.card_name}}},
+        function (err, result) {
+            if (err) {
+                res.send(err);
+            } else {
+                res.send(result);
+            }
+        })
 })
 
 // add card defualt collection
-router.route("/my-collection/:id/default/:wishList").post(authorize,(req, res, next) => {
-    collectionSchema.findOne({name:  req.params.wishList == 'false' ? 'My Collection' : 'Wishlist'}).
-        then(function (doc) {
+router.route("/my-collection/:id/default/:wishList").post(authorize, (req, res, next) => {
+    collectionSchema.findOne({name: req.params.wishList == 'false' ? 'My Collection' : 'Wishlist'}).then(function (doc) {
         if (doc) {
             collectionSchema.findOne({
-                name:  req.params.wishList == 'false' ? 'My Collection' : 'Wishlist',
+                name: req.params.wishList == 'false' ? 'My Collection' : 'Wishlist',
                 "cardList.name": req.body.name
             }).then(function (element) {
-                if(element != null && element._doc.cardList.length > 0){
-                    if (req.body.quantityCol > 0){
-                        collectionSchema.findOneAndUpdate({'cardList.name': req.body.name} , {'$set': {'cardList.$.quantity': req.body.quantityCol}}).then(
+                if (element != null && element._doc.cardList.length > 0) {
+                    if (req.body.quantityCol > 0) {
+                        collectionSchema.findOneAndUpdate({'cardList.name': req.body.name}, {'$set': {'cardList.$.quantity': req.body.quantityCol}}).then(
                             function (err, result) {
                                 if (err) {
                                     res.send(err);
@@ -153,7 +218,7 @@ router.route("/my-collection/:id/default/:wishList").post(authorize,(req, res, n
                                 element._doc.cardList.splice(i--, 1);
                             }
                         }
-                        element._doc.save( function (err, result) {
+                        element._doc.save(function (err, result) {
                             if (err) {
                                 res.send(err);
                             } else {
