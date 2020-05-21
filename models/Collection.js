@@ -18,6 +18,9 @@ let collectionSchema = new Schema({
     cardList: {
         type: [cardSchema.Schema],
         default: []
+    },
+    edition: {
+        type:String
     }
 }, {
     collection: 'cards'

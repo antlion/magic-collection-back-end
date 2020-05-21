@@ -125,7 +125,8 @@ router.route("/my-collection/:id/add").post(authorize, (req, res, next) => {
     const deck = new collectionSchema({
         name: req.body.name,
         wishList: req.body.wishList,
-        userId: req.params.id
+        userId: req.params.id,
+        edition: req.params['edition']
     });
     deck.save().then((response) => {
         res.status(201).json({
