@@ -18,6 +18,12 @@ let cardSchema = new Schema({
     },
     rarity: {
         type: String
+    },
+    price: {
+        type: Number
+    },
+    set_number: {
+        type: Number
     }
 }, {
     collection: 'cards'

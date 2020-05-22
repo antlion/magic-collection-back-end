@@ -205,8 +205,8 @@ router.route("/my-collection/:id/default/:wishList").post(authorize, (req, res, 
             }).then(function (element) {
                 if (element != null && element._doc.cardList.length > 0) {
                     if (req.body.quantityCol > 0) {
-                        collectionSchema.findOneAndUpdate({'cardList.name': req.body.name}, {'$set': {'cardList.$.quantity': req.body.quantityCol}}).then(
-                            function (err, result) {
+                        collectionSchema.findOneAndUpdate({'cardList.name': req.body.name}, {'$set': {'cardList.$.quantity': req.body.quantityCol, 'cardList.$.price': req.body.price }}).then(
+                            function (result, err) {
                                 if (err) {
                                     res.send(err);
                                 } else {
@@ -219,7 +219,7 @@ router.route("/my-collection/:id/default/:wishList").post(authorize, (req, res, 
                                 element._doc.cardList.splice(i--, 1);
                             }
                         }
-                        element._doc.save(function (err, result) {
+                        element.save(function (err, result) {
                             if (err) {
                                 res.send(err);
                             } else {
@@ -237,7 +237,10 @@ router.route("/my-collection/:id/default/:wishList").post(authorize, (req, res, 
                             "avatar": req.body.avatar,
                             "type": req.body.type,
                             "manaCost": req.body.manaCost,
-                            "png": req.body.png
+                            "png": req.body.png,
+                            "price": req.body.price,
+                            "rarity": req.body.rarity,
+                            "set_number": req.body.set_number
                         }
                     )
                     doc.save(function (err, result) {
@@ -260,7 +263,10 @@ router.route("/my-collection/:id/default/:wishList").post(authorize, (req, res, 
                 "avatar": req.body.avatar,
                 "type": req.body.type,
                 "manaCost": req.body.manaCost,
-                "png": req.body.png
+                "png": req.body.png,
+                "price": req.body.price,
+                "rarity": req.body.rarity,
+                "set_number": req.body.set_number
             })
             const deck = new collectionSchema({
                 name: req.params.wishList == 'false' ? 'My Collection' : 'Wishlist',
@@ -276,7 +282,10 @@ router.route("/my-collection/:id/default/:wishList").post(authorize, (req, res, 
                         "avatar": req.body.avatar,
                         "type": req.body.type,
                         "manaCost": req.body.manaCost,
-                        "png": req.body.png
+                        "png": req.body.png,
+                        "price": req.body.price,
+                        "rarity": req.body.rarity,
+                        "set_number": req.body.set_number
                     }
                 )
                 response.save(function (err, result) {
