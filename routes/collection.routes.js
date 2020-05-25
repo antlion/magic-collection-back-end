@@ -5,6 +5,95 @@ const cardSchema = require("../models/Card");
 
 const authorize = require("../middlewares/auth");
 
+// add card to collection set
+router.route("/my-collection/:id/collectionCode").post(authorize, (req, res, next) => {
+    collectionSchema.findOne({edition: req.body.edition, userId: req.params.id}).then(function (doc) {
+        if (doc) { // collezione trovata
+            collectionSchema.findOne({
+                edition: req.body.edition, userId: req.params.id,
+                "cardList.name": req.body.name
+            }).then(function (element) {
+                if (element != null && element._doc.cardList.length > 0) { // carta trovata
+                    if (req.body.quantity > 0) {
+                        collectionSchema.findOneAndUpdate({'cardList.name': req.body.name}, {'$inc': {'cardList.$.quantity': req.body.quantity}}).then(
+                            function (result, err) {
+                                if (err) {
+                                    res.send(err);
+                                } else {
+                                    res.send(result);
+                                }
+                            })
+                    }
+
+                } else {
+                    doc.cardList.push(
+                        {
+                            "quantity": req.body.quantity,
+                            "name": req.body.name,
+                            "edition": req.body.edition,
+                            "avatar": req.body.avatar,
+                            "type": req.body.type,
+                            "manaCost": req.body.manaCost,
+                            "png": req.body.png,
+                            "price": req.body.price,
+                            "rarity": req.body.rarity,
+                            "set_number": req.body.set_number
+                        }
+                    )
+                    doc.save(function (err, result) {
+                        if (err) {
+                            res.send(err);
+                        } else {
+                            res.send(true);
+                        }
+                    })
+                }
+            })
+
+        } // non esiste
+        else {
+
+            const deck = new collectionSchema({
+                name: req.body.edition + " Collection",
+                wishList: false,
+                userId: req.params.id,
+                edition: req.body.edition
+            });
+            deck.save().then((response) => {
+                response.cardList.push(
+                    {
+                        "quantity": req.body.quantity,
+                        "name": req.body.name,
+                        "edition": req.body.edition,
+                        "avatar": req.body.avatar,
+                        "type": req.body.type,
+                        "manaCost": req.body.manaCost,
+                        "png": req.body.png,
+                        "price": req.body.price,
+                        "rarity": req.body.rarity,
+                        "set_number": req.body.set_number
+                    }
+                )
+                response.save(function (err, result) {
+                    if (err) {
+                        res.send(err);
+                    } else {
+                        res.send(true);
+                    }
+                })
+            }).catch(error => {
+                res.status(500).json({
+                    error: error
+                });
+            });
+        }
+    })
+
+})
+
+
+
+
 //push card in collection
 router.route("/my-collection/:id/:id_collection/push").post(authorize, (req, res, next) => {
     let card = req.body
@@ -164,6 +253,23 @@ router.route("/my-collection/:id/searchCards/:id_collection/:query").get(authori
             "cardList.name": new RegExp(".*" + req.params.query + ".*", "i")
         },
         {_id: 0, cardList: {$elemMatch: {name: new RegExp(".*" + req.params.query + ".*", "i")}}},
+        function (err, result) {
+            if (err) {
+                res.send(err);
+            } else {
+                res.send(result);
+            }
+        })
+});
+
+// search card in all collection
+router.route("/my-collection/:id/searchCardsAmongCollection/:query").get(authorize, (req, res, next) => {
+
+    let doc = collectionSchema.find(
+        {
+            userId: req.params.id,
+            "cardList.name": new RegExp(".*" + req.params.query + ".*", "i")
+        },
         function (err, result) {
             if (err) {
                 res.send(err);
