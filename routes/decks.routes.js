@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const deckSchema = require("../models/Deck");
 const authorize = require("../middlewares/auth");
+var mongoose = require('mongoose');
 
 // DELETE DECK
 router.route("/my-decks/:id_user/:id_deck/delete").get(authorize,(req, res, next) => {
@@ -66,12 +67,15 @@ router.route('/my-decks/:id').get(authorize, (req, res, next) => {
 })
 
 router.post("/my-decks/:id/add",(req, res, next) => {
-    const deck = new deckSchema({
-        name: req.body.name,
+
+    var filter = {_id:   req.body._id == undefined ? new mongoose.mongo.ObjectID() : req.body._id},
+        update = { name: req.body.name,
         type: req.body.type,
-        userId: req.params.id
-    });
-    deck.save().then((response) => {
+        userId: req.params.id},
+        options = { upsert: true, new: true};
+
+
+    deckSchema.findOneAndUpdate(filter, update, options).then((response) => {
         res.status(201).json({
             message: "Deck Added!",
             result: response
